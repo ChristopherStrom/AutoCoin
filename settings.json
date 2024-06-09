@@ -4,5 +4,15 @@
   "daily_spend_limit": 1000,
   "daily_earned_limit": 2000,
   "transaction_rate_limit": 60,
-  "delay": 60
+  "check_interval": 60,
+  "debug": true,
+  "log_transactions": true,
+  "log_prices": true,
+  "purchase_limit_before_sell": 500,
+  "sell_limit_before_purchase": 500,
+  "coins": {
+    "BTC": {"enabled": true},
+    "SHIB": {"enabled": false},
+    "DOGE": {"enabled": false}
+  }
 }
