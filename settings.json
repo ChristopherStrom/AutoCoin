@@ -3,5 +3,6 @@
   "API_SECRET": "YOUR_API_SECRET",
   "daily_spend_limit": 1000,
   "daily_earned_limit": 2000,
-  "transaction_rate_limit": 60
+  "transaction_rate_limit": 60,
+  "delay": 60
 }
