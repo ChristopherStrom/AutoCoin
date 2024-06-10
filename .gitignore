@@ -1,2 +1,4 @@
 *.log
-settings.json
+/settings/
+settings.yaml
+coins_settings.yaml
