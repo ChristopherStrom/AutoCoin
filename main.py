@@ -4,8 +4,8 @@ from trading import check_price_trends
 import threading
 import time
 
-
 def main():
+    settings = load_settings()
     accounts = get_accounts()
 
     # Load existing coins settings if they exist to preserve existing data
@@ -72,14 +72,20 @@ def main():
     update_coins_settings(coins_settings)
 
     # Start a thread to check price trends at the specified interval
-    price_trends_thread = threading.Thread(target=check_price_trends)
+    refresh_interval = settings.get('refresh_interval', 60)
+
+    def run_price_trends():
+        while True:
+            check_price_trends()
+            time.sleep(refresh_interval)
+
+    price_trends_thread = threading.Thread(target=run_price_trends)
     price_trends_thread.daemon = True
     price_trends_thread.start()
 
     # Keep the main thread alive
     while True:
         time.sleep(1)
-
 
 if __name__ == "__main__":
     main()
