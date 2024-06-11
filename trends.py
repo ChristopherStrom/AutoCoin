@@ -1,5 +1,6 @@
 from coinbase import get_current_price
 from config import load_coins_settings, update_coins_settings
+import numpy as np
 
 coins_settings = load_coins_settings()
 
