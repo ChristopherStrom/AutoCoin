@@ -16,15 +16,23 @@ def check_price_trends():
             if current_price is not None:
                 price_change = ((current_price - previous_price) / previous_price) if previous_price else 0
                 price_trends.append(price_change)
+                
+                # Keep only the last 10 trends
+                if len(price_trends) > 10:  
+                    price_trends.pop(0)
+                    
                 details['previous_price'] = current_price
                 details['price_trends'] = price_trends
                 details['current_price'] = current_price
                 details['usd_value'] = current_price * balance
 
+                # Averaging the last 5 trends
+                avg_trend = np.mean(price_trends[-5:])  
+                
                 # Update trend status based on price trends
-                if price_change > 0:
+                if avg_trend > 0:
                     trend_status = 'upward'
-                elif price_change < 0:
+                elif avg_trend < 0:
                     trend_status = 'downward'
                 else:
                     trend_status = 'stable'
