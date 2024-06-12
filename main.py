@@ -18,7 +18,7 @@ def refresh_balances_and_prices(settings):
         if network not in coins_settings:
             coins_settings[network] = {
                 'enabled': False,
-                'current_price': "N/A",
+                'current_price': 1.0,
                 'current_cost_usd': -1,
                 'usd_value': 0.0,
                 'balance': balance,
@@ -32,11 +32,14 @@ def refresh_balances_and_prices(settings):
             current_price = get_current_price(product_id)
             if current_price is None:
                 coins_settings[network]['enable_conversion'] = False
+                current_price = 1.0  # Set to 1.0 when no ticker is available
+        else:
+            current_price = float(coins_settings[network].get('current_price', 1.0))
 
         if network.upper() in ['USD', 'USDC']:
             current_price = 1.0
 
-        usd_value = balance * current_price if current_price is not None else 0.0
+        usd_value = balance * current_price
 
         if current_price is not None:
             print(f"Account: {account['name']}")
@@ -48,7 +51,7 @@ def refresh_balances_and_prices(settings):
             print(f"Could not retrieve price for {network}. Skipping...\n")
 
         # Update the network settings with the current data
-        coins_settings[network]['current_price'] = current_price if current_price is not None else "N/A"
+        coins_settings[network]['current_price'] = current_price
         coins_settings[network]['usd_value'] = usd_value
         coins_settings[network]['balance'] = balance
         if 'current_cost_usd' not in coins_settings[network]:
