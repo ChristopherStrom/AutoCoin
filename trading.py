@@ -2,7 +2,6 @@ from config import load_coins_settings, update_coins_settings, load_settings
 from coinbase import get_current_price
 import time
 
-
 def check_price_trends():
     while True:
         coins_settings = load_coins_settings()

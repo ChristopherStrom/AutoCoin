@@ -12,12 +12,31 @@ def refresh_balances_and_prices(settings):
         network = account['currency']
         balance = float(account['available_balance']['value'])
         product_id = f"{network}-USD"
-        current_price = get_current_price(product_id)
+        current_price = None
+
+        # Ensure the network settings exist
+        if network not in coins_settings:
+            coins_settings[network] = {
+                'enabled': False,
+                'current_price': "N/A",
+                'current_cost_usd': -1,
+                'usd_value': 0.0,
+                'balance': balance,
+                'price_trends': [],
+                'trend_status': None,
+                'previous_price': 0.0,
+                'enable_conversion': True
+            }
+
+        if coins_settings[network].get('enable_conversion', True):
+            current_price = get_current_price(product_id)
+            if current_price is None:
+                coins_settings[network]['enable_conversion'] = False
 
         if network.upper() in ['USD', 'USDC']:
             current_price = 1.0
 
-        usd_value = balance * current_price if current_price is not None else None
+        usd_value = balance * current_price if current_price is not None else 0.0
 
         if current_price is not None:
             print(f"Account: {account['name']}")
@@ -28,31 +47,22 @@ def refresh_balances_and_prices(settings):
         else:
             print(f"Could not retrieve price for {network}. Skipping...\n")
 
-        if network not in coins_settings:
-            coins_settings[network] = {
-                'enabled': False,
-                'current_price': current_price if current_price is not None else "N/A",
-                'current_cost_usd': -1,
-                'usd_value': usd_value if usd_value is not None else "N/A",
-                'balance': balance,
-                'price_trends': [],
-                'trend_status': None,
-                'previous_price': current_price
-            }
-        else:
-            coins_settings[network]['current_price'] = current_price if current_price is not None else "N/A"
-            coins_settings[network]['usd_value'] = usd_value if usd_value is not None else "N/A"
-            coins_settings[network]['balance'] = balance
-            if 'current_cost_usd' not in coins_settings[network]:
-                coins_settings[network]['current_cost_usd'] = -1
-            if 'enabled' not in coins_settings[network]:
-                coins_settings[network]['enabled'] = False
-            if 'price_trends' not in coins_settings[network]:
-                coins_settings[network]['price_trends'] = []
-            if 'trend_status' not in coins_settings[network]:
-                coins_settings[network]['trend_status'] = None
-            if 'previous_price' not in coins_settings[network]:
-                coins_settings[network]['previous_price'] = current_price
+        # Update the network settings with the current data
+        coins_settings[network]['current_price'] = current_price if current_price is not None else "N/A"
+        coins_settings[network]['usd_value'] = usd_value
+        coins_settings[network]['balance'] = balance
+        if 'current_cost_usd' not in coins_settings[network]:
+            coins_settings[network]['current_cost_usd'] = -1
+        if 'enabled' not in coins_settings[network]:
+            coins_settings[network]['enabled'] = False
+        if 'price_trends' not in coins_settings[network]:
+            coins_settings[network]['price_trends'] = []
+        if 'trend_status' not in coins_settings[network]:
+            coins_settings[network]['trend_status'] = None
+        if 'previous_price' not in coins_settings[network]:
+            coins_settings[network]['previous_price'] = current_price
+        if 'enable_conversion' not in coins_settings[network]:
+            coins_settings[network]['enable_conversion'] = True
 
     update_coins_settings(coins_settings)
 
