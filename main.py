@@ -1,8 +1,10 @@
-from config import load_settings, load_coins_settings, update_coins_settings
+from config import load_settings, load_coins_settings, update_coins_settings, save_trends, load_trends, \
+    ensure_settings_file
 from coinbase import get_accounts, get_current_price
 from trading import check_price_trends
 import threading
 import time
+
 
 def refresh_balances_and_prices(settings):
     accounts = get_accounts()
@@ -22,7 +24,6 @@ def refresh_balances_and_prices(settings):
                 'current_cost_usd': -1,
                 'usd_value': 0.0,
                 'balance': balance,
-                'price_trends': [],
                 'trend_status': None,
                 'previous_price': 0.0,
                 'enable_conversion': True
@@ -58,8 +59,6 @@ def refresh_balances_and_prices(settings):
             coins_settings[network]['current_cost_usd'] = -1
         if 'enabled' not in coins_settings[network]:
             coins_settings[network]['enabled'] = False
-        if 'price_trends' not in coins_settings[network]:
-            coins_settings[network]['price_trends'] = []
         if 'trend_status' not in coins_settings[network]:
             coins_settings[network]['trend_status'] = None
         if 'previous_price' not in coins_settings[network]:
@@ -67,9 +66,20 @@ def refresh_balances_and_prices(settings):
         if 'enable_conversion' not in coins_settings[network]:
             coins_settings[network]['enable_conversion'] = True
 
+        # Load and save trends
+        price_trends = load_trends(network)
+        if 'price_trends' in coins_settings[network]:
+            coins_settings[network]['price_trends'] = price_trends
+        else:
+            coins_settings[network]['price_trends'] = []
+
+        save_trends(network, coins_settings[network]['price_trends'])
+
     update_coins_settings(coins_settings)
 
+
 def main():
+    ensure_settings_file()
     settings = load_settings()
     refresh_balances_and_prices(settings)
 
@@ -80,6 +90,7 @@ def main():
     while True:
         time.sleep(settings['refresh_interval'])
         refresh_balances_and_prices(settings)
+
 
 if __name__ == "__main__":
     main()
