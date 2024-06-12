@@ -1,44 +1,31 @@
-from config import load_coins_settings, update_coins_settings, load_settings
-from coinbase import get_current_price
 import time
+from config import load_coins_settings, update_coins_settings, load_trends, save_trends, load_settings
+from coinbase import get_current_price
+from selling import check_sell_opportunities
+from buying import check_buy_opportunities
 
 def check_price_trends():
     while True:
         coins_settings = load_coins_settings()
+
         for coin, settings in coins_settings.items():
             if settings['enabled']:
-                product_id = f"{coin}-USD"
-                current_price = get_current_price(product_id)
+                current_price = get_current_price(f"{coin}-USD")
+                previous_price = settings['previous_price']
+                price_trends = load_trends(coin)
 
-                if current_price is not None:
-                    previous_price = settings.get('previous_price', current_price)
-
-                    if previous_price == 0:
-                        print(f"Previous price for {coin} is zero. Skipping trend calculation.")
-                        settings['previous_price'] = current_price
-                        continue
-
+                if previous_price:
                     price_change = (current_price - previous_price) / previous_price
+                    price_trends.append(price_change)
+                    price_trends = price_trends[-10:]  # Keep only the last 10 trends
 
-                    if len(settings['price_trends']) >= 10:
-                        settings['price_trends'].pop(0)
-                    settings['price_trends'].append(price_change)
+                    trend_status = "upward" if price_change > 0 else "downward"
+                    coins_settings[coin]['trend_status'] = trend_status
 
-                    if price_change > 0:
-                        trend_status = 'upward'
-                    elif price_change < 0:
-                        trend_status = 'downward'
-                    else:
-                        trend_status = 'stable'
-
-                    settings['trend_status'] = trend_status
-                    settings['previous_price'] = current_price
-
-                    print(f"Checking {coin}:")
-                    print(f"  Previous Price: {previous_price}")
-                    print(f"  Current Price: {current_price}")
-                    print(f"  Price Change: {price_change}")
-                    print(f"  Trend Status: {trend_status}\n")
+                save_trends(coin, price_trends)
+                settings['previous_price'] = current_price
 
         update_coins_settings(coins_settings)
+        check_sell_opportunities()
+        check_buy_opportunities()
         time.sleep(load_settings()['refresh_interval'])

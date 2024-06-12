@@ -1,10 +1,8 @@
-from config import load_settings, load_coins_settings, update_coins_settings, save_trends, load_trends, \
-    ensure_settings_file
+from config import load_settings, load_coins_settings, update_coins_settings, save_trends, load_trends, ensure_settings_file
 from coinbase import get_accounts, get_current_price
 from trading import check_price_trends
 import threading
 import time
-
 
 def refresh_balances_and_prices(settings):
     accounts = get_accounts()
@@ -68,15 +66,9 @@ def refresh_balances_and_prices(settings):
 
         # Load and save trends
         price_trends = load_trends(network)
-        if 'price_trends' in coins_settings[network]:
-            coins_settings[network]['price_trends'] = price_trends
-        else:
-            coins_settings[network]['price_trends'] = []
-
-        save_trends(network, coins_settings[network]['price_trends'])
+        save_trends(network, price_trends)
 
     update_coins_settings(coins_settings)
-
 
 def main():
     ensure_settings_file()
@@ -90,7 +82,6 @@ def main():
     while True:
         time.sleep(settings['refresh_interval'])
         refresh_balances_and_prices(settings)
-
 
 if __name__ == "__main__":
     main()
